@@ -1,5 +1,7 @@
 #!/bin/bash
 
+alias sshvpn='ssh -i ~/Developer/rogo/rogo-info/DefaultLogin.pem ubuntu@vpn.rogoag.com'
+
 function sshk() {
   #export DISABLE_AUTO_TITLE="true"
   #echo -n -e "\033]0;$1\007"
