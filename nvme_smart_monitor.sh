@@ -6,7 +6,13 @@ STATE_FILE="$HOME/.nvme_smart_error_count"
 LOG_FILE="$HOME/nvme_smart_monitor.log"
 
 # Get current error count
-CURRENT_COUNT=$(sudo smartctl -a "$DEVICE" | awk '/Error Information Log Entries:/ {print $NF}')
+CURRENT_COUNT=$(sudo /usr/sbin/smartctl -a "$DEVICE" | awk '/Error Information Log Entries:/ {print $NF}')
+
+# Validate it's a number
+if ! [[ "$CURRENT_COUNT" =~ ^[0-9]+$ ]]; then
+    echo "$(date): Failed to retrieve SMART error count." >> "$LOG_FILE"
+    exit 1
+fi
 
 # If the state file doesn't exist, create it
 if [ ! -f "$STATE_FILE" ]; then
