@@ -20,13 +20,27 @@ if [ -s $PIDFILE ] && [ -d "/proc/$(cat $PIDFILE)" ]; then
   # move the screencast into the user's video directory
   mv $OUTFILE $FINALFILE
 else
+
+  if [ -z "$DISPLAY" ]; then
+    echo "DISPLAY is not set. Cannot capture screen."
+
+    exit 1
+  fi
+
   # use slop to select a sreen area
-  slop=$(slop -f "%x %y %w %h") || exit 1
+  slop=$(slop -f "%x %y %w %h" | tr -d '%') || exit 1
   read -r X Y W H <<<$slop
+
+  if [[ ! "$W" =~ ^[0-9]+$ || ! "$H" =~ ^[0-9]+$ ]]; then
+    echo "Invalid dimensions from slop: W=$W, H=$H"
+
+    exit 1
+  fi
+
+  echo "X=$X Y=$Y W=$W H=$H"
 
   # write to the pidfile
   echo $$ >$PIDFILE &&
-
     # let the recording process take over this pid
     exec ffmpeg \
       -f pulse \
@@ -37,7 +51,7 @@ else
       -f x11grab \
       -r 25 \
       -s "$W"x"$H" \
-      -i :0.0+$X,$Y \
+      -i "${DISPLAY}.0+${X},${Y}" \
       -vcodec libx264 ${OUTFILE}
 fi
 
