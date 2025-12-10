@@ -1,0 +1,21 @@
+#!/bin/sh
+# sysrq-trigger-wrapper: write arguments to /proc/sysrq-trigger
+# Usage: sysrq-trigger-wrapper <char>
+set -eu
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <command-char>" >&2
+  exit 2
+fi
+# join all args into single string
+arg="$*"
+# Only allow single-char commands or safe list
+case "$arg" in
+  r|e|i|s|u|b|f|h|m|t|k)
+    echo "$arg" > /proc/sysrq-trigger
+    exit 0
+    ;;
+  *)
+    echo "Refusing to run unsafe sysrq command: $arg" >&2
+    exit 3
+    ;;
+esac
